@@ -1,7 +1,7 @@
 package com.oguzdev.circularfloatingactionmenu.samples;
 
-import android.app.Activity;
 import android.app.Fragment;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.view.LayoutInflater;
@@ -13,8 +13,7 @@ import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 
-import com.oguzdev.circularfloatingactionmenu.library.FloatingActionMenu;
-import com.oguzdev.circularfloatingactionmenu.library.SubActionButton;
+import com.oguzdev.circularfloatingactionmenu.library.CircularMenu;
 
 public class MenuWithCustomActionButtonActivity extends ActionBarActivity {
 
@@ -28,7 +27,6 @@ public class MenuWithCustomActionButtonActivity extends ActionBarActivity {
                     .commit();
         }
     }
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -66,14 +64,30 @@ public class MenuWithCustomActionButtonActivity extends ActionBarActivity {
             Button centerActionButton = (Button) rootView.findViewById(R.id.centerActionButton);
 
             // Add some items to the menu. They are regular views as well!
-            TextView a = new TextView(getActivity()); a.setText("a"); a.setBackgroundResource(android.R.drawable.btn_default_small);
-            TextView b = new TextView(getActivity()); b.setText("b"); b.setBackgroundResource(android.R.drawable.btn_default_small);
-            TextView c = new TextView(getActivity()); c.setText("c"); c.setBackgroundResource(android.R.drawable.btn_default_small);
-            TextView d = new TextView(getActivity()); d.setText("d"); d.setBackgroundResource(android.R.drawable.btn_default_small);
-            TextView e = new TextView(getActivity()); e.setText("e"); e.setBackgroundResource(android.R.drawable.btn_default_small);
-            TextView f = new TextView(getActivity()); f.setText("f"); f.setBackgroundResource(android.R.drawable.btn_default_small);
-            TextView g = new TextView(getActivity()); g.setText("g"); g.setBackgroundResource(android.R.drawable.btn_default_small);
-            TextView h = new TextView(getActivity()); h.setText("h"); h.setBackgroundResource(android.R.drawable.btn_default_small);
+            TextView a = new TextView(getActivity());
+            a.setText("a");
+            a.setBackgroundResource(android.R.drawable.btn_default_small);
+            TextView b = new TextView(getActivity());
+            b.setText("b");
+            b.setBackgroundResource(android.R.drawable.btn_default_small);
+            TextView c = new TextView(getActivity());
+            c.setText("c");
+            c.setBackgroundResource(android.R.drawable.btn_default_small);
+            TextView d = new TextView(getActivity());
+            d.setText("d");
+            d.setBackgroundResource(android.R.drawable.btn_default_small);
+            TextView e = new TextView(getActivity());
+            e.setText("e");
+            e.setBackgroundResource(android.R.drawable.btn_default_small);
+            TextView f = new TextView(getActivity());
+            f.setText("f");
+            f.setBackgroundResource(android.R.drawable.btn_default_small);
+            TextView g = new TextView(getActivity());
+            g.setText("g");
+            g.setBackgroundResource(android.R.drawable.btn_default_small);
+            TextView h = new TextView(getActivity());
+            h.setText("h");
+            h.setBackgroundResource(android.R.drawable.btn_default_small);
             FrameLayout.LayoutParams tvParams = new FrameLayout.LayoutParams(FrameLayout.LayoutParams.WRAP_CONTENT, FrameLayout.LayoutParams.WRAP_CONTENT);
             a.setLayoutParams(tvParams);
             b.setLayoutParams(tvParams);
@@ -84,9 +98,9 @@ public class MenuWithCustomActionButtonActivity extends ActionBarActivity {
             g.setLayoutParams(tvParams);
             h.setLayoutParams(tvParams);
 
-            SubActionButton.Builder subBuilder = new SubActionButton.Builder(getActivity());
+            MenuBackground menuBackground = new MenuBackground.Builder(getActivity()).withColor(Color.RED).create();
 
-            FloatingActionMenu circleMenu = new FloatingActionMenu.Builder(getActivity())
+            CircularMenu circleMenu = new CircularMenu.Builder(getActivity())
                     .setStartAngle(0) // A whole circle!
                     .setEndAngle(360)
                     .setRadius(getResources().getDimensionPixelSize(R.dimen.radius_large))
@@ -99,6 +113,7 @@ public class MenuWithCustomActionButtonActivity extends ActionBarActivity {
                     .addSubActionView(g)
                     .addSubActionView(h)
                     .attachTo(centerActionButton)
+                    .addBackgroundView(menuBackground)
                     .build();
 
             return rootView;

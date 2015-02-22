@@ -18,8 +18,6 @@ import android.view.LayoutInflater;
 import android.view.OrientationEventListener;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewGroupOverlay;
-import android.view.ViewOverlay;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
 
@@ -33,12 +31,16 @@ import java.util.List;
  * Provides the main structure of the menu.
  */
 
-public class FloatingActionMenu {
+public class CircularMenu {
 
     /**
      * Reference to the view (usually a button) to trigger the menu to show
      */
     private View mainActionView;
+    /**
+     * reference to the view (usually an ImageView) to be displayed as background
+     */
+    private View backgroundView;
     /**
      * The angle (in degrees, modulus 360) which the circular menu starts from
      */
@@ -83,7 +85,7 @@ public class FloatingActionMenu {
     private OrientationEventListener orientationListener;
 
     /**
-     * Constructor that takes the parameters collected using {@link FloatingActionMenu.Builder}
+     * Constructor that takes the parameters collected using {@link CircularMenu.Builder}
      *
      * @param mainActionView
      * @param startAngle
@@ -93,16 +95,18 @@ public class FloatingActionMenu {
      * @param animationHandler
      * @param animated
      */
-    public FloatingActionMenu(final View mainActionView,
-                              int startAngle,
-                              int endAngle,
-                              int radius,
-                              List<Item> subActionItems,
-                              MenuAnimationHandler animationHandler,
-                              boolean animated,
-                              MenuStateChangeListener stateChangeListener,
-                              final boolean systemOverlay) {
+    public CircularMenu(final View mainActionView,
+                        View backgroundView,
+                        int startAngle,
+                        int endAngle,
+                        int radius,
+                        List<Item> subActionItems,
+                        MenuAnimationHandler animationHandler,
+                        boolean animated,
+                        MenuStateChangeListener stateChangeListener,
+                        final boolean systemOverlay) {
         this.mainActionView = mainActionView;
+        this.backgroundView = backgroundView;
         this.startAngle = startAngle;
         this.endAngle = endAngle;
         this.radius = radius;
@@ -147,6 +151,12 @@ public class FloatingActionMenu {
                 item.view.post(new ItemViewQueueListener(item));
             }
         }
+
+        if (hasBackgroundView()) {
+            addViewToCurrentContainer(backgroundView, new FrameLayout.LayoutParams((int) (getRadius() * 3.5), (int) (getRadius() * 3.5)));
+            backgroundView.setAlpha(0);
+        }
+        addViewToCurrentContainer(mainActionView, mainActionView.getLayoutParams());
 
         if (systemOverlay) {
             orientationListener = new OrientationEventListener(mainActionView.getContext(), SensorManager.SENSOR_DELAY_UI) {
@@ -215,6 +225,9 @@ public class FloatingActionMenu {
                 }
                 addViewToCurrentContainer(subActionItems.get(i).view, params);
             }
+            addViewToCurrentContainer(mainActionView, mainActionView.getLayoutParams());
+            addViewToCurrentContainer(backgroundView, new FrameLayout.LayoutParams(getRadius(), getRadius()));
+
             // Tell the current MenuAnimationHandler to animate from the center
             animationHandler.animateMenuOpening(center);
         } else {
@@ -234,6 +247,8 @@ public class FloatingActionMenu {
                 }
                 addViewToCurrentContainer(subActionItems.get(i).view, params);
             }
+            addViewToCurrentContainer(mainActionView, mainActionView.getLayoutParams());
+            addViewToCurrentContainer(backgroundView);
         }
         // do not forget to specify that the menu is open.
         open = true;
@@ -265,6 +280,7 @@ public class FloatingActionMenu {
             for (int i = 0; i < subActionItems.size(); i++) {
                 removeViewFromCurrentContainer(subActionItems.get(i).view);
             }
+            removeViewFromCurrentContainer(backgroundView);
             detachOverlayContainer();
         }
         // do not forget to specify that the menu is now closed.
@@ -438,21 +454,24 @@ public class FloatingActionMenu {
     }
 
     private void addViewToCurrentContainer(View view, ViewGroup.LayoutParams layoutParams) {
-        if (systemOverlay) {
-            overlayContainer.addView(view, layoutParams);
-        } else {
-            try {
-                if (layoutParams != null) {
-                    FrameLayout.LayoutParams lp = (FrameLayout.LayoutParams) layoutParams;
-                    ((ViewGroup) getActivityContentView()).addView(view, lp);
-                } else {
-                    ((ViewGroup) getActivityContentView()).addView(view);
+        if (view != null && view.getParent() == null) {
+            if (systemOverlay) {
+                overlayContainer.addView(view, layoutParams);
+            } else {
+                try {
+                    if (layoutParams != null) {
+                        FrameLayout.LayoutParams lp = (FrameLayout.LayoutParams) layoutParams;
+                        ((ViewGroup) getActivityContentView()).addView(view, lp);
+                    } else {
+                        ((ViewGroup) getActivityContentView()).addView(view);
+                    }
+                } catch (ClassCastException e) {
+                    throw new ClassCastException("layoutParams must be an instance of " +
+                            "FrameLayout.LayoutParams.");
                 }
-            } catch (ClassCastException e) {
-                throw new ClassCastException("layoutParams must be an instance of " +
-                        "FrameLayout.LayoutParams.");
             }
         }
+
     }
 
     public void attachOverlayContainer() {
@@ -539,6 +558,14 @@ public class FloatingActionMenu {
         this.stateChangeListener = listener;
     }
 
+    public View getBackgroundView() {
+        return backgroundView;
+    }
+
+    public boolean hasBackgroundView() {
+        return backgroundView != null;
+    }
+
     /**
      * A simple click listener used by the main action view
      */
@@ -609,13 +636,13 @@ public class FloatingActionMenu {
      * A listener to listen open/closed state changes of the Menu
      */
     public static interface MenuStateChangeListener {
-        public void onMenuOpened(FloatingActionMenu menu);
+        public void onMenuOpened(CircularMenu menu);
 
-        public void onMenuClosed(FloatingActionMenu menu);
+        public void onMenuClosed(CircularMenu menu);
     }
 
     /**
-     * A builder for {@link FloatingActionMenu} in conventional Java Builder format
+     * A builder for {@link CircularMenu} in conventional Java Builder format
      */
     public static class Builder {
 
@@ -623,6 +650,7 @@ public class FloatingActionMenu {
         private int endAngle;
         private int radius;
         private View actionView;
+        private View backgroundView;
         private List<Item> subActionItems;
         private MenuAnimationHandler animationHandler;
         private boolean animated;
@@ -661,6 +689,11 @@ public class FloatingActionMenu {
 
         public Builder addSubActionView(View subActionView, int width, int height) {
             subActionItems.add(new Item(subActionView, width, height));
+            return this;
+        }
+
+        public Builder addBackgroundView(View background) {
+            backgroundView = background;
             return this;
         }
 
@@ -736,8 +769,9 @@ public class FloatingActionMenu {
             return this;
         }
 
-        public FloatingActionMenu build() {
-            return new FloatingActionMenu(actionView,
+        public CircularMenu build() {
+            return new CircularMenu(actionView,
+                    backgroundView,
                     startAngle,
                     endAngle,
                     radius,

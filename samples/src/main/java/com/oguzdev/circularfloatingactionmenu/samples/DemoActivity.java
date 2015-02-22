@@ -76,23 +76,7 @@ public class DemoActivity extends ActionBarActivity {
 
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-            switch (position) {
-                case 0:
-                    startActivity(new Intent(getActivity(), MenuWithFABActivity.class));
-                    break;
-                case 1:
-                    startActivity(new Intent(getActivity(), MenuWithCustomActionButtonActivity.class));
-                    break;
-                case 2:
-                    startActivity(new Intent(getActivity(), MenuWithCustomAnimationActivity.class));
-                    break;
-                case 3:
-                    startActivity(new Intent(getActivity(), MenuInScrollViewActivity.class));
-                    break;
-                case 4:
-                    startActivity(new Intent(getActivity(), SystemOverlayMenuActivity.class));
-                    break;
-            }
+            startActivity(new Intent(getActivity(), MenuWithCustomActionButtonActivity.class));
         }
     }
 }

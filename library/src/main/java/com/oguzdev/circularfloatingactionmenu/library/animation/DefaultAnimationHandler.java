@@ -11,7 +11,7 @@ import android.view.View;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.OvershootInterpolator;
 
-import com.oguzdev.circularfloatingactionmenu.library.FloatingActionMenu;
+import com.oguzdev.circularfloatingactionmenu.library.CircularMenu;
 
 /**
  * An example animation handler
@@ -19,11 +19,18 @@ import com.oguzdev.circularfloatingactionmenu.library.FloatingActionMenu;
  */
 public class DefaultAnimationHandler extends MenuAnimationHandler {
 
-    /** duration of animations, in milliseconds */
-    protected static final int DURATION = 500;
-    /** duration to wait between each of  */
-    protected static final int LAG_BETWEEN_ITEMS = 20;
-    /** holds the current state of animation */
+    /**
+     * duration of animations, in milliseconds
+     */
+    private static final int DURATION = 500;
+
+    private static final int FACE_DOWN = 180;
+    private static final int FACE_UP = 360;
+    private static final int OPAQUE = 1;
+
+    /**
+     * holds the current state of animation
+     */
     private boolean animating;
 
     public DefaultAnimationHandler() {
@@ -36,33 +43,51 @@ public class DefaultAnimationHandler extends MenuAnimationHandler {
 
         setAnimating(true);
 
-        Animator lastAnimation = null;
         for (int i = 0; i < menu.getSubActionItems().size(); i++) {
-
-
-            //menu.getSubActionItems().get(i).view.setTranslationX(menu.getActionViewRadius());
-            menu.getSubActionItems().get(i).view.setAlpha(1);
-            PropertyValuesHolder pvhX = PropertyValuesHolder.ofFloat(View.TRANSLATION_X, menu.getSubActionItems().get(i).x - center.x + menu.getSubActionItems().get(i).width / 2);
-            PropertyValuesHolder pvhY = PropertyValuesHolder.ofFloat(View.TRANSLATION_Y, menu.getSubActionItems().get(i).y - center.y + menu.getSubActionItems().get(i).height / 2);
-            PropertyValuesHolder pvhR = PropertyValuesHolder.ofFloat(View.ROTATION, 360);
-
-            final ObjectAnimator animation = ObjectAnimator.ofPropertyValuesHolder(menu.getSubActionItems().get(i).view, pvhX, pvhY, pvhR);
-            animation.setDuration(DURATION);
-            animation.setInterpolator(new OvershootInterpolator(0.9f));
-            animation.addListener(new SubActionItemAnimationListener(menu.getSubActionItems().get(i), ActionType.OPENING));
-
-            if(i == 0) {
-                lastAnimation = animation;
-            }
-
-            // Put a slight lag between each of the menu items to make it asymmetric
-            animation.setStartDelay((menu.getSubActionItems().size() - i) * LAG_BETWEEN_ITEMS);
-            animation.start();
-        }
-        if(lastAnimation != null) {
-            lastAnimation.addListener(new LastAnimationListener());
+            animateOpeningSubActionItem(center, menu.getSubActionItems().get(i), i == 0);
         }
 
+        if (menu.hasBackgroundView()) {
+            animateRevealBackground(center);
+        }
+
+    }
+
+    private void animateOpeningSubActionItem(Point center, CircularMenu.Item item, boolean isFirst) {
+        item.view.setAlpha(OPAQUE);
+        item.view.setRotation(FACE_DOWN);
+
+        PropertyValuesHolder pvhX = PropertyValuesHolder.ofFloat(View.TRANSLATION_X, item.x - center.x + item.width / 2);
+        PropertyValuesHolder pvhY = PropertyValuesHolder.ofFloat(View.TRANSLATION_Y, item.y - center.y + item.height / 2);
+        PropertyValuesHolder pvhR = PropertyValuesHolder.ofFloat(View.ROTATION, FACE_UP);
+
+        ObjectAnimator animation = ObjectAnimator.ofPropertyValuesHolder(item.view, pvhX, pvhY, pvhR);
+        animation.setDuration(DURATION);
+        animation.setInterpolator(new OvershootInterpolator(0.9f));
+        animation.addListener(new SubActionItemAnimationListener(item, ActionType.OPENING));
+
+        if (isFirst) {
+            animation.addListener(new LastAnimationListener());
+        }
+        animation.start();
+    }
+
+    private void animateRevealBackground(Point center) {
+        View menuBackgroundView = menu.getBackgroundView();
+        menuBackgroundView.setAlpha(1);
+        menuBackgroundView.setX(center.x - menuBackgroundView.getWidth() / 2);
+        menuBackgroundView.setY(center.y - menuBackgroundView.getHeight() / 2);
+        menuBackgroundView.setScaleX(0);
+        menuBackgroundView.setScaleY(0);
+
+        PropertyValuesHolder pvhX = PropertyValuesHolder.ofFloat(View.SCALE_X, menu.getRadius() * 3.5f / menuBackgroundView.getWidth());
+        PropertyValuesHolder pvhY = PropertyValuesHolder.ofFloat(View.SCALE_Y, menu.getRadius() * 3.5f / menuBackgroundView.getHeight());
+
+        final ObjectAnimator animation = ObjectAnimator.ofPropertyValuesHolder(menuBackgroundView, pvhX, pvhY);
+        animation.setDuration(DURATION);
+        animation.setInterpolator(new OvershootInterpolator(0.9f));
+
+        animation.start();
     }
 
     @Override
@@ -71,27 +96,42 @@ public class DefaultAnimationHandler extends MenuAnimationHandler {
 
         setAnimating(true);
 
-        Animator lastAnimation = null;
         for (int i = 0; i < menu.getSubActionItems().size(); i++) {
-            PropertyValuesHolder pvhX = PropertyValuesHolder.ofFloat(View.TRANSLATION_X, - (menu.getSubActionItems().get(i).x - center.x + menu.getSubActionItems().get(i).width / 2));
-            PropertyValuesHolder pvhY = PropertyValuesHolder.ofFloat(View.TRANSLATION_Y, - (menu.getSubActionItems().get(i).y - center.y + menu.getSubActionItems().get(i).height / 2));
-            PropertyValuesHolder pvhR = PropertyValuesHolder.ofFloat(View.ROTATION, 0);
-
-            final ObjectAnimator animation = ObjectAnimator.ofPropertyValuesHolder(menu.getSubActionItems().get(i).view, pvhX, pvhY, pvhR);
-            animation.setDuration(DURATION);
-            animation.setInterpolator(new AccelerateDecelerateInterpolator());
-            animation.addListener(new SubActionItemAnimationListener(menu.getSubActionItems().get(i), ActionType.CLOSING));
-
-            if(i == 0) {
-                lastAnimation = animation;
-            }
-
-            animation.setStartDelay((menu.getSubActionItems().size() - i) * LAG_BETWEEN_ITEMS);
-            animation.start();
+            animateClosingSubActionItem(center, menu.getSubActionItems().get(i), i == 0);
         }
-        if(lastAnimation != null) {
-            lastAnimation.addListener(new LastAnimationListener());
+
+        if (menu.hasBackgroundView()) {
+            animateCollapseBackground();
         }
+
+    }
+
+    private void animateClosingSubActionItem(Point center, CircularMenu.Item item, boolean isFirst) {
+        PropertyValuesHolder pvhX = PropertyValuesHolder.ofFloat(View.TRANSLATION_X, -(item.x - center.x + item.width / 2));
+        PropertyValuesHolder pvhY = PropertyValuesHolder.ofFloat(View.TRANSLATION_Y, -(item.y - center.y + item.height / 2));
+        PropertyValuesHolder pvhR = PropertyValuesHolder.ofFloat(View.ROTATION, FACE_DOWN);
+
+        final ObjectAnimator animation = ObjectAnimator.ofPropertyValuesHolder(item.view, pvhX, pvhY, pvhR);
+        animation.setDuration(DURATION);
+        animation.setInterpolator(new AccelerateDecelerateInterpolator());
+        animation.addListener(new SubActionItemAnimationListener(item, ActionType.CLOSING));
+
+        if (isFirst) {
+            animation.addListener(new LastAnimationListener());
+        }
+
+        animation.start();
+    }
+
+    private void animateCollapseBackground() {
+        PropertyValuesHolder pvhX = PropertyValuesHolder.ofFloat(View.SCALE_X, 0);
+        PropertyValuesHolder pvhY = PropertyValuesHolder.ofFloat(View.SCALE_Y, 0);
+
+        final ObjectAnimator animation = ObjectAnimator.ofPropertyValuesHolder(menu.getBackgroundView(), pvhX, pvhY);
+        animation.setDuration((long) (DURATION * 1.2));
+        animation.setInterpolator(new AccelerateDecelerateInterpolator());
+
+        animation.start();
     }
 
     @Override
@@ -106,10 +146,10 @@ public class DefaultAnimationHandler extends MenuAnimationHandler {
 
     protected class SubActionItemAnimationListener implements Animator.AnimatorListener {
 
-        private FloatingActionMenu.Item subActionItem;
+        private CircularMenu.Item subActionItem;
         private ActionType actionType;
 
-        public SubActionItemAnimationListener(FloatingActionMenu.Item subActionItem, ActionType actionType) {
+        public SubActionItemAnimationListener(CircularMenu.Item subActionItem, ActionType actionType) {
             this.subActionItem = subActionItem;
             this.actionType = actionType;
         }
@@ -129,6 +169,8 @@ public class DefaultAnimationHandler extends MenuAnimationHandler {
             restoreSubActionViewAfterAnimation(subActionItem, actionType);
         }
 
-        @Override public void onAnimationRepeat(Animator animation) {}
+        @Override
+        public void onAnimationRepeat(Animator animation) {
+        }
     }
 }

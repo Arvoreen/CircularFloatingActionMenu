@@ -9,7 +9,7 @@ import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
 
-import com.oguzdev.circularfloatingactionmenu.library.FloatingActionMenu;
+import com.oguzdev.circularfloatingactionmenu.library.CircularMenu;
 
 /**
  * An abstract class that is a prototype for the actual animation handlers
@@ -19,12 +19,12 @@ public abstract class MenuAnimationHandler {
     // There are only two distinct animations at the moment.
     protected enum ActionType {OPENING, CLOSING}
 
-    protected FloatingActionMenu menu;
+    protected CircularMenu menu;
 
     public MenuAnimationHandler() {
     }
 
-    public void setMenu(FloatingActionMenu menu) {
+    public void setMenu(CircularMenu menu) {
         this.menu = menu;
     }
 
@@ -57,7 +57,7 @@ public abstract class MenuAnimationHandler {
      * @param subActionItem
      * @param actionType
      */
-    protected void restoreSubActionViewAfterAnimation(FloatingActionMenu.Item subActionItem, ActionType actionType) {
+    protected void restoreSubActionViewAfterAnimation(CircularMenu.Item subActionItem, ActionType actionType) {
         ViewGroup.LayoutParams params = subActionItem.view.getLayoutParams();
         subActionItem.view.setTranslationX(0);
         subActionItem.view.setTranslationY(0);
