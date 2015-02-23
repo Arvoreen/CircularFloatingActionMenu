@@ -445,6 +445,24 @@ public class CircularMenu {
     }
 
     /**
+     * Finds and returns the main action view
+     *
+     * @return the main action view
+     */
+    public View getActionView() {
+        return mainActionView;
+    }
+
+    public View findSubActionViewWithId(int id) {
+        for (Item item : getSubActionItems()) {
+            if (item.view.getId() == id) {
+                return item.view;
+            }
+        }
+        return null;
+    }
+
+    /**
      * Intended to use for systemOverlay mode.
      *
      * @return the WindowManager for the current context.
