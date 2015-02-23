@@ -574,6 +574,7 @@ public class CircularMenu {
 
     public void setStateChangeListener(MenuStateChangeListener listener) {
         this.stateChangeListener = listener;
+        this.animationHandler.setStateChangeListener(this.stateChangeListener);
     }
 
     public View getBackgroundView() {

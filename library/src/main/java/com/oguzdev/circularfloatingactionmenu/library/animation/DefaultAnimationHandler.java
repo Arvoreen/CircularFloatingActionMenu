@@ -67,7 +67,7 @@ public class DefaultAnimationHandler extends MenuAnimationHandler {
         animation.addListener(new SubActionItemAnimationListener(item, ActionType.OPENING));
 
         if (isFirst) {
-            animation.addListener(new LastAnimationListener());
+            animation.addListener(new LastAnimationListener(getStateChangeListener(), ActionType.OPENING, getMenu()));
         }
         animation.start();
     }
@@ -117,7 +117,7 @@ public class DefaultAnimationHandler extends MenuAnimationHandler {
         animation.addListener(new SubActionItemAnimationListener(item, ActionType.CLOSING));
 
         if (isFirst) {
-            animation.addListener(new LastAnimationListener());
+            animation.addListener(new LastAnimationListener(getStateChangeListener(), ActionType.CLOSING, getMenu()));
         }
 
         animation.start();
