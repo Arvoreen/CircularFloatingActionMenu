@@ -251,13 +251,14 @@ public class CircularMenu {
             addViewToCurrentContainer(backgroundView);
         }
         // do not forget to specify that the menu is open.
-        open = true;
 
-        if (stateChangeListener != null) {
+        if (stateChangeListener != null && !animated) {
             stateChangeListener.onMenuOpened(this);
+        } else {
+            open = true;
         }
-        mainActionView.bringToFront();
 
+        mainActionView.bringToFront();
         getActivityContentView().requestLayout();
         getActivityContentView().invalidate();
     }
@@ -283,11 +284,12 @@ public class CircularMenu {
             removeViewFromCurrentContainer(backgroundView);
             detachOverlayContainer();
         }
-        // do not forget to specify that the menu is now closed.
-        open = false;
 
-        if (stateChangeListener != null) {
+        if (stateChangeListener != null && !animated) {
             stateChangeListener.onMenuClosed(this);
+        } else {
+            // do not forget to specify that the menu is now closed.
+            open = false;
         }
     }
 
@@ -572,8 +574,20 @@ public class CircularMenu {
         return size;
     }
 
-    public void setStateChangeListener(MenuStateChangeListener listener) {
-        this.stateChangeListener = listener;
+    public void setStateChangeListener(final MenuStateChangeListener listener) {
+        this.stateChangeListener = new MenuStateChangeListener() {
+            @Override
+            public void onMenuOpened(CircularMenu menu) {
+                listener.onMenuOpened(menu);
+                open = true;
+            }
+
+            @Override
+            public void onMenuClosed(CircularMenu menu) {
+                listener.onMenuClosed(menu);
+                open = false;
+            }
+        };
         this.animationHandler.setStateChangeListener(this.stateChangeListener);
     }
 
