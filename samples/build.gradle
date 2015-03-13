@@ -11,6 +11,11 @@ android {
         versionCode 3
         versionName "1.0.2"
     }
+
+    lintOptions {
+        abortOnError false
+    }
+
     buildTypes {
         release {
             minifyEnabled false
@@ -20,7 +25,7 @@ android {
 }
 
 dependencies {
-    compile project(':library')
+    compile project(':circularmenu-library')
     compile fileTree(dir: 'libs', include: ['*.jar'])
     compile 'com.android.support:support-v4:21.+'
     compile 'com.android.support:appcompat-v7:+'
