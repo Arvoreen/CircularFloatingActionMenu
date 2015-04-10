@@ -3,7 +3,6 @@
  */
 package com.oguzdev.circularfloatingactionmenu.library;
 
-import android.app.Activity;
 import android.content.Context;
 import android.graphics.Path;
 import android.graphics.PathMeasure;
@@ -259,8 +258,8 @@ public class CircularMenu {
         }
 
         mainActionView.bringToFront();
-        getActivityContentView().requestLayout();
-        getActivityContentView().invalidate();
+        getContainerView().requestLayout();
+        getContainerView().invalidate();
     }
 
     /**
@@ -368,9 +367,9 @@ public class CircularMenu {
             coords[1] -= getStatusBarHeight();
         } else {
             Rect activityFrame = new Rect();
-            getActivityContentView().getWindowVisibleDisplayFrame(activityFrame);
-            coords[0] -= (getScreenSize().x - getActivityContentView().getMeasuredWidth());
-            coords[1] -= (activityFrame.height() + activityFrame.top - getActivityContentView().getMeasuredHeight());
+            getContainerView().getWindowVisibleDisplayFrame(activityFrame);
+            coords[0] -= (getScreenSize().x - getContainerView().getMeasuredWidth());
+            coords[1] -= (activityFrame.height() + activityFrame.top - getContainerView().getMeasuredHeight());
         }
         return new Point(coords[0], coords[1]);
     }
@@ -445,9 +444,9 @@ public class CircularMenu {
      *
      * @return the main content view
      */
-    public View getActivityContentView() {
+    public View getContainerView() {
         try {
-            return ((Activity) mainActionView.getContext()).getWindow().getDecorView().findViewById(android.R.id.content);
+            return (View) mainActionView.getParent();
         } catch (ClassCastException e) {
             throw new ClassCastException("Please provide an Activity context for this FloatingActionMenu.");
         }
@@ -488,9 +487,9 @@ public class CircularMenu {
                 try {
                     if (layoutParams != null) {
                         FrameLayout.LayoutParams lp = (FrameLayout.LayoutParams) layoutParams;
-                        ((ViewGroup) getActivityContentView()).addView(view, lp);
+                        ((ViewGroup) getContainerView()).addView(view, lp);
                     } else {
-                        ((ViewGroup) getActivityContentView()).addView(view);
+                        ((ViewGroup) getContainerView()).addView(view);
                     }
                 } catch (ClassCastException e) {
                     throw new ClassCastException("layoutParams must be an instance of " +
@@ -566,7 +565,7 @@ public class CircularMenu {
         if (systemOverlay) {
             overlayContainer.removeView(view);
         } else {
-            ((ViewGroup) getActivityContentView()).removeView(view);
+            ((ViewGroup) getContainerView()).removeView(view);
         }
     }
 
@@ -702,7 +701,7 @@ public class CircularMenu {
         private boolean systemOverlay;
 
         public Builder(Context context, boolean systemOverlay) {
-            subActionItems = new ArrayList<Item>();
+            subActionItems = new ArrayList<>();
             // Default settings
             radius = context.getResources().getDimensionPixelSize(R.dimen.action_menu_radius);
             startAngle = 180;
